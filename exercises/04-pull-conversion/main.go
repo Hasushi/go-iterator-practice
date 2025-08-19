@@ -6,11 +6,22 @@ import (
 )
 
 func Naturals() iter.Seq[int] {
-	// TODO: 1,2,3,... を無限に yield
-	return nil
+	return func(yield func(int) bool) {
+		for i := 1; ; i++ {
+			if !yield(i) {
+				return 
+			}
+		}
+	}
 }
 
 func main() {
-	// TODO: iter.Pull を使って next, stop を取得
-	fmt.Println("TODO")
+	next, stop := iter.Pull(Naturals())
+	defer stop()
+
+	for i := 0; i < 10; i++ {
+		v, ok := next()
+		if !ok { break }
+		fmt.Println(v)
+	}
 }
