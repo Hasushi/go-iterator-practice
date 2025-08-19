@@ -9,8 +9,14 @@ import (
 func Fibonacci(limit int) iter.Seq[int] {
 	return func(yield func(int) bool) {
 		// TODO: a,b を使って 0,1,1,2,... を生成し、yield(a)。
-		// yield が false を返したら「停止メッセージ」を出して return。
-		// a が limit を超えたら停止。
+		var a, b int = 0, 1
+		for a <= limit {
+			if !yield(a) {
+				fmt.Println("yieldがfalseを返したので終了")
+				return
+			}
+			a, b = b, a + b
+		}
 	}
 }
 
