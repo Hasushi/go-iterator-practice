@@ -7,13 +7,28 @@ import (
 
 // TODO: Map, Filter を実装
 func Map[A any, B any](seq iter.Seq[A], f func(A) B) iter.Seq[B] {
-	// TODO
-	return nil
+	return func(yield func(B) bool) {
+		for v := range seq {
+			fmt.Printf("Map: %v\n", v)
+			fv := f(v)
+			if !yield(fv) {
+				return 
+			}
+		}
+	}
 }
 
 func Filter[A any](seq iter.Seq[A], pred func(A) bool) iter.Seq[A] {
-	// TODO
-	return nil
+	return func(yield func(A) bool){
+		for v := range seq {
+			fmt.Printf("Filter: %v\n", v);
+			if !pred(v) { continue };
+			if !yield(v) {
+				fmt.Println("Filter 終了")
+				return 
+			}
+		}
+	}
 }
 
 func Count(n int) iter.Seq[int] {
@@ -26,13 +41,15 @@ func Count(n int) iter.Seq[int] {
 
 func main() {
 	// 1..100 -> 偶数 -> 2乗 -> 10個見たらbreak
-	_ = Count
-	_ = Map
-	_ = Filter
+	ci := Count(100)
+	fi := Filter(ci, func(x int) bool { return x%2 == 0 })
+	mi := Map(fi, func(x int) int { return x*x })
 
 	// TODO: 実装して動かす
-	for v := range Count(10) {
-		fmt.Println("placeholder:", v)
-		break
+	i := 0
+	for v := range mi {
+		fmt.Printf("%d\n",v)
+		i++
+		if i ==10 { break }
 	}
 }
