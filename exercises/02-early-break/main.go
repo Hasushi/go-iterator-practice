@@ -8,7 +8,9 @@ import (
 // TODO: Count(n) を実装
 func Count(n int) iter.Seq[int] {
 	return func(yield func(int) bool) {
+		defer fmt.Println("Count: 片付け完了")
 		for i := 1; i <= n; i++ {
+			fmt.Println("Count: 送出直前", i)
 			if !yield(i) {
 				fmt.Println("Count: ループを抜ける")
 				return
