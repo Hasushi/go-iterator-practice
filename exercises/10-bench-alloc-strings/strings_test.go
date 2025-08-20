@@ -21,11 +21,27 @@ func genLines(n int) iter.Seq[string] {
 // TODO: Eager と Iterator の2パターンを実装し、len>8 のものだけ length を合計
 
 func EagerSumLength(n int) int {
-	return 0
+	arr := make([]string, 0, n)
+	for line := range genLines(n) {
+		arr = append(arr, line)
+	}
+	sum := 0
+	for _, line := range arr {
+		if len(line) > 8 {
+			sum += len(line)
+		}
+	}
+	return sum
 }
 
 func IterSumLength(n int) int {
-	return 0
+	sum := 0
+	for line := range genLines(n) {
+		if len(line) > 8 {
+			sum += len(line)
+		}
+	}
+	return sum
 }
 
 func TestSame(t *testing.T) {
