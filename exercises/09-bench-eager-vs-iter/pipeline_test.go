@@ -16,7 +16,24 @@ const (
 // Eager: 中間スライスを作る実装
 func EagerSumSquaresEvenFirstK(n, k int) int {
 	// TODO: 1..n から偶数だけをスライスに集め、2乗して、先頭k個を合計
-	return 0
+	squares := make([]int, 0, n/2+1)
+	for i := 1; i <= n; i++ {
+		if i%2 == 0 {
+			squares = append(squares, i)
+		}
+	}
+
+	for i := 0; i < len(squares); i++ {
+		squares[i] *= squares[i]
+	}
+
+	if k > len(squares) { k = len(squares) }
+
+	sum := 0
+	for i := 0; i < k; i++ {
+		sum += squares[i]
+	}
+	return sum
 }
 
 // Iterator: iter.Seq を使う実装
@@ -47,20 +64,54 @@ func Map[A any, B any](seq iter.Seq[A], f func(A) B) iter.Seq[B] {
 }
 
 func IterSumSquaresEvenFirstK(n, k int) int {
-	// TODO: Count -> Filter(偶数) -> Map(2乗) を合成し、先頭k個を合計
-	return 0
+	seq := Count(n)
+	seq = Filter(seq, func(x int) bool { return x%2 == 0 })
+	seq = Map(seq, func(x int) int { return x * x })
+	sum, seen := 0, 0
+	for v := range seq {
+		sum += v
+		seen++
+		if seen >= k {
+			break
+		}
+	}
+	return sum
 }
 
 // Channel: goroutine + chanでストリーム。中断可能にするため context を使う
 func genEvensSquares(ctx context.Context, n int) <-chan int {
-	// TODO: バッファ少なめのチャネルを作成し、偶数の2乗を送る。
-	// ctx.Done() を選択して中断に対応。
-	return nil
+	ch := make(chan int, 64)
+	go func() {
+		defer close(ch)
+
+		for i := 1; i <= n; i++ {
+			if i%2 == 0 {
+				v := i * i
+				select {
+				case ch <- v:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+	return ch
 }
 
 func ChannelSumSquaresEvenFirstK(n, k int) int {
-	// TODO: ctx を作り、k 個合計したら cancel して終了
-	return 0
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	sum, seen := 0, 0
+	for v := range genEvensSquares(ctx, n) {
+		sum += v
+		seen++
+		if seen >= k {
+			cancel()
+			break
+		}
+	}
+	return sum
 }
 
 // ========== correctness test ==========
