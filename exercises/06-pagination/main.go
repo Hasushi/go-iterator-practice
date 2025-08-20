@@ -23,7 +23,19 @@ func FetchPage(cursor string) (items []int, next string) {
 
 // TODO: StreamAll を実装（FetchPage を中で呼び続ける）
 func StreamAll() iter.Seq[int] {
-	return nil
+	return func(yield func(int) bool) {
+		cursor := ""
+		for {
+			items, next := FetchPage(cursor)
+			for _, v := range items {
+				if !yield(v) { return }
+			}
+			if next == "" {
+				return
+			}
+			cursor = next
+		}
+	}
 }
 
 func main() {
