@@ -10,8 +10,20 @@ import (
 
 func WalkFiles(root string) iter.Seq[string] {
 	return func(yield func(string) bool) {
-		// TODO: filepath.WalkDir を使ってファイルだけ yield
-		// yield=false のときは fs.SkipAll で中断
+		_ = filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Name: %s\n", d.Name())
+			fmt.Printf("IsDir: %v\n", d.IsDir())
+			if d.IsDir() {
+				return nil
+			}
+			if !yield(p) {
+				return fs.SkipAll
+			}
+			return nil
+		})
 	}
 }
 
